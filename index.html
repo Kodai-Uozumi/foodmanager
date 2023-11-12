@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- 画面解像度により文字サイズを対応(モバイル対応) -->
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <!-- jquery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- fullcalendar CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/main.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/main.min.js"></script>
+    <!-- fullcalendar 言語 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/locales-all.min.js"></script>
+
+    <style>
+      /* bodyスタイル */
+      body {
+        margin-top: 40px;
+        font-size: 14px;
+        font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+      }
+
+      /* ドラックボックスのスタイル */
+      #external-events {
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        width: 150px;
+        height: 400px;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        background: #eee;
+        text-align: left;
+        overflow-y: scroll;
+        overflow-x: hidden;
+      }
+
+      /* ドラックボックスのスタイルのタイトル */
+      #external-events h4 {
+        font-size: 16px;
+        margin-top: 0;
+        padding-top: 1em;
+      }
+
+      #external-events .fc-event {
+        margin: 3px 0;
+        cursor: move;
+      }
+
+      #external-events p {
+        margin: 1.5em 0;
+        font-size: 11px;
+        color: #666;
+      }
+
+      #external-events p input {
+        margin: 0;
+        vertical-align: middle;
+      }
+
+      /*ゴミ箱*/
+      #remove-events {
+        position: fixed;
+        /*↓いじればゴミ箱の位置変わります*/
+        left: 20px;
+        top: 450px;
+        /*↑*/
+        width: 150px;
+        border: 1px solid #e6e6fa;
+        background: #e6e6fa;
+        text-align: left;
+      }
+
+      #calendar-wrap {
+        margin-left: 200px;
+      }
+
+      #calendar1 {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      /*dragする食材のスタイル変更*/
+      /*.fc-event-main{
+      color: rgb(225, 20, 20);
+      background: rgb(20, 191, 72);
+    }*/
+
+      .dropdown {
+        display: none;
+      }
+
+      label,
+      li {
+        display: block;
+        padding: 1em;
+        border-bottom: #fff 1px solid;
+        font-family: sans-serif;
+        /* letter-spacing:.05em;*/
+        font-weight: bold;
+      }
+
+      input[type="checkbox"] {
+        display: none;
+      }
+
+      /*yasai*/
+      label[for="yasai"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(113, 241, 97);
+      }
+      label[for="yasai"]::before {
+        transform: rotate(225deg);
+      }
+      #yasai:checked + .dropdown {
+        display: block;
+      }
+
+      /*kudamono*/
+      label[for="kudamono"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(234, 148, 182);
+      }
+      label[for="kudamono"]::before {
+        transform: rotate(225deg);
+      }
+      #kudamono:checked + .dropdown {
+        display: block;
+      }
+
+      /*niku*/
+      label[for="niku"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(247, 68, 36);
+      }
+      label[for="niku"]::before {
+        transform: rotate(225deg);
+      }
+      #niku:checked + .dropdown {
+        display: block;
+      }
+
+      /*sakana*/
+      label[for="sakana"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(12, 214, 237);
+      }
+      label[for="sakana"]::before {
+        transform: rotate(225deg);
+      }
+      #sakana:checked + .dropdown {
+        display: block;
+      }
+
+      /*kanbutsu*/
+      label[for="kanbutsu"] {
+        display: block;
+        width: 90px;
+        height: 13px;
+        background: rgb(42, 153, 72);
+      }
+      label[for="kanbutsu"]::before {
+        transform: rotate(225deg);
+      }
+      #kanbutsu:checked + .dropdown {
+        display: block;
+      }
+
+      /*kinoko*/
+      label[for="kinoko"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(159, 138, 92);
+      }
+      label[for="kinoko"]::before {
+        transform: rotate(225deg);
+      }
+      #kinoko:checked + .dropdown {
+        display: block;
+      }
+
+      /*tamago*/
+      label[for="tamago"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(253, 232, 6);
+      }
+      label[for="tamago"]::before {
+        transform: rotate(225deg);
+      }
+      #tamago:checked + .dropdown {
+        display: block;
+      }
+
+      /*imo*/
+      label[for="imo"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(190, 134, 203);
+      }
+      label[for="imo"]::before {
+        transform: rotate(225deg);
+      }
+      #imo:checked + .dropdown {
+        display: block;
+      }
+
+      /*nyu*/
+      label[for="nyu"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(255, 255, 255);
+      }
+      label[for="nyu"]::before {
+        transform: rotate(225deg);
+      }
+      #nyu:checked + .dropdown {
+        display: block;
+      }
+
+      /*mame*/
+      label[for="mame"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(241, 221, 181);
+      }
+      label[for="mame"]::before {
+        transform: rotate(225deg);
+      }
+      #mame:checked + .dropdown {
+        display: block;
+      }
+
+      /*men*/
+      label[for="men"] {
+        width: 90px;
+        height: 13px;
+        display: block;
+        background: rgb(255, 166, 14);
+      }
+      label[for="men"]::before {
+        transform: rotate(225deg);
+      }
+      #men:checked + .dropdown {
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-analytics.js";
+      import { getFirestore } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js";
+      import {
+        collection,
+        doc,
+        setDoc,
+        addDoc,
+        getDocs,
+        onSnapshot,
+        query,
+        deleteDoc
+      } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-firestore.js";
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyDntCSUVIpMhZkoC_CcWZm25ihYqEmMX2E",
+        authDomain: "foodmanager-b3d28.firebaseapp.com",
+        projectId: "foodmanager-b3d28",
+        storageBucket: "foodmanager-b3d28.appspot.com",
+        messagingSenderId: "630311751582",
+        appId: "1:630311751582:web:2f75826816bf1a2fd3108f",
+        measurementId: "G-Q2C5VNWH2H"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      // Initialize Cloud Firestore and get a reference to the service
+      const db = getFirestore(app);
+      const q = query(collection(db, "foods"));
+      window.db = db;
+      window.doc = doc;
+      window.setDoc = setDoc;
+      window.addDoc = addDoc;
+      window.collection = collection;
+      window.getDocs = getDocs;
+      window.q = q;
+      window.onSnapshot = onSnapshot;
+      window.deleteDoc = deleteDoc;
+    </script>
+    <div id="wrap">
+      <!-- ドラックボックス -->
+      <div id="external-events">
+        <h4>食材追加</h4>
+        <label for="yasai">野菜</label>
+        <input type="checkbox" id="yasai" />
+        <ul class="dropdown" id="external-events-list-yasai"></ul>
+
+        <label for="kudamono">果物</label>
+        <input type="checkbox" id="kudamono" />
+        <ul class="dropdown" id="external-events-list-kudamono"></ul>
+
+        <label for="niku">肉製品</label>
+        <input type="checkbox" id="niku" />
+        <ul class="dropdown" id="external-events-list-niku"></ul>
+
+        <label for="sakana">魚</label>
+        <input type="checkbox" id="sakana" />
+        <ul class="dropdown" id="external-events-list-sakana"></ul>
+
+        <label for="kanbutsu">乾物・海藻類</label>
+        <input type="checkbox" id="kanbutsu" />
+        <ul class="dropdown" id="external-events-list-kanbutsu"></ul>
+
+        <label for="kinoko">きのこ類</label>
+        <input type="checkbox" id="kinoko" />
+        <ul class="dropdown" id="external-events-list-kinoko"></ul>
+
+        <label for="tamago">卵類</label>
+        <input type="checkbox" id="tamago" />
+        <ul class="dropdown" id="external-events-list-tamago"></ul>
+
+        <label for="imo">イモ類</label>
+        <input type="checkbox" id="imo" />
+        <ul class="dropdown" id="external-events-list-imo"></ul>
+
+        <label for="nyu">乳製品</label>
+        <input type="checkbox" id="nyu" />
+        <ul class="dropdown" id="external-events-list-nyu"></ul>
+
+        <label for="mame">豆・豆腐</label>
+        <input type="checkbox" id="mame" />
+        <ul class="dropdown" id="external-events-list-mame"></ul>
+
+        <label for="men">麺類</label>
+        <input type="checkbox" id="men" />
+        <ul class="dropdown" id="external-events-list-men"></ul>
+        <!-- <div id='external-events-list'></div>-->
+      </div>
+      <!-- ゴミ箱 -->
+      <div id="remove-events">
+        <img src="img/mogumoguface_close.png" height="150px" id="mogumogu" />
+      </div>
+      <!-- calendarタグ -->
+      <div id="calendar-wrap">
+        <div id="calendar1"></div>
+      </div>
+    </div>
+    <script>
+      document.bgColor = "#e6e6fa";
+      (function () {
+        $(function () {
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-yasai")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（野菜）
+          var yasai = [
+            "キャベツ",
+            "レタス",
+            "白菜",
+            "玉ねぎ",
+            "ネギ",
+            "もやし",
+            "トマト",
+            "きゅうり",
+            "ナス",
+            "ピーマン",
+            "パプリカ",
+            "かぼちゃ",
+            "にんじん",
+            "大根",
+            "かぶ"
+          ]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < yasai.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main '></div>").text(yasai[i]);
+            $("#external-events-list-yasai").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-kudamono")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（果物）
+          var kudamono = [
+            "りんご",
+            "いちご",
+            "キウイ",
+            "ブドウ",
+            "もも",
+            "梨",
+            "みかん",
+            "マンゴー",
+            "パイナップル",
+            "メロン",
+            "スイカ"
+          ]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < kudamono.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(kudamono[i]);
+            $("#external-events-list-kudamono").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-niku")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（肉）
+          var niku = ["牛肉", "豚肉", "とり肉", "ラム", "ひき肉", "肉加工食品"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < niku.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(niku[i]);
+            $("#external-events-list-niku").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-sakana")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（魚）
+          var sakana = [
+            "サケ・サーモン",
+            "ぶり",
+            "サバ",
+            "サンマ",
+            "しらす",
+            "ツナ缶",
+            "エビ",
+            "カニ",
+            "イカ",
+            "タコ",
+            "貝類",
+            "魚卵",
+            "ねり物"
+          ]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < sakana.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(sakana[i]);
+            $("#external-events-list-sakana").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-kanbutsu")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（乾物）
+          var kanbutsu = ["海苔", "昆布", "わかめ", "ふ", "春雨"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < kanbutsu.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(kanbutsu[i]);
+            $("#external-events-list-kanbutsu").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-kinoko")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（きのこ）
+          var kinoko = [
+            "しいたけ",
+            "しめじ",
+            "エリンギ",
+            "えのきたけ",
+            "まいたけ"
+          ]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < kinoko.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(kinoko[i]);
+            $("#external-events-list-kinoko").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-tamago")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（卵）
+          var tamago = ["鶏卵"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < tamago.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(tamago[i]);
+            $("#external-events-list-tamago").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-imo")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（いも）
+          var imo = [
+            "じゃがいも",
+            "さつまいも",
+            "里芋",
+            "長いも",
+            "こんにゃく類"
+          ]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < imo.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(imo[i]);
+            $("#external-events-list-imo").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-nyu")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（乳製品）
+          var nyu = ["牛乳", "チーズ", "ヨーグルト", "生クリーム", "バター"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < nyu.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(nyu[i]);
+            $("#external-events-list-nyu").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-mame")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（豆）
+          var mame = ["豆腐", "油揚げ", "厚揚げ", "納豆", "味噌"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < mame.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(mame[i]);
+            $("#external-events-list-mame").append($div.append($event));
+          }
+
+          // ドラックボックスのエレメントを取得
+          var containerEl = $("#external-events-list-men")[0];
+          // ドラックボックスを生成する。
+          new FullCalendar.Draggable(containerEl, {
+            itemSelector: ".fc-event",
+            eventData: function (eventEl) {
+              return {
+                title: eventEl.innerText.trim()
+              };
+            }
+          });
+          // ドラックイベントを追加（麺）
+          var men = ["うどん", "そば", "そうめん", "中華麺", "パスタ"]; //dragしたい食材(適当に増やしてください)
+          for (var i = 0; i < men.length; i++) {
+            var $div = $(
+              "<div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'></div>"
+            );
+            $event = $("<div class='fc-event-main'></div>").text(men[i]);
+            $("#external-events-list-men").append($div.append($event));
+          }
+          // calendarエレメント取得
+          var calendarEl = $("#calendar1")[0];
+
+          //カレンダー内からドラッグされたものかどうかを調べる変数
+          var is_drag_from_calendar = 0;
+
+          //最初のロードであればtrue
+          var is_first_load = true;
+          //最初のロードのみを実行
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            if (is_first_load) {
+              querySnapshot.forEach((doc) => {
+                calendar.addEvent({
+                  title: doc.data().name,
+                  start: doc.data().StartDate, //<--start: doc.data().Date,
+                  end: doc.data().EndDate, //<--end: doc.data().Date
+                  id: doc.data().id
+                });
+              });
+              is_first_load = false;
+            }
+          });
+
+          const firebase_regist = {
+            regist(Name, start, end) {
+              const newRef = doc(collection(db, "foods"));
+              const data = {
+                name: Name,
+                StartDate: start,
+                EndDate: end,
+                id: newRef.id
+              };
+              setDoc(newRef, data);
+
+              console.log("Document written with ID: ", newRef.id);
+
+              return newRef;
+            }
+          };
+
+          var event_dateStr;
+          var event_name;
+
+          // full-calendar生成する。
+          var calendar = new FullCalendar.Calendar(calendarEl, {
+            // ヘッダーに表示するツールバー
+            headerToolbar: {
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,listMonth"
+            },
+
+            locale: "ja", // 日本語設定
+            editable: true, // 修正可能
+            droppable: true, // ドラック可能
+            dragRevertDuration: 0, //即時削除
+
+            eventDidMount: function (info) {
+              var today = new Date();
+              var year = today.getFullYear();
+              var month = today.getMonth() + 1;
+              if (0 < month && month < 10) {
+                var month = "0" + month;
+              }
+              /*var month = "0" + (today.getMonth() + 1);*/
+              var day = today.getDate();
+              var today_ = year + "-" + month + "-" + day;
+              if (info.event.startStr < today_) {
+                info.el.style.background = "red";
+              }
+            },
+
+            //ドラッグを始めた場所がカレンダー内であればis_drag_from_calendarを1に
+            eventDragStart: function (eventEl) {
+              //カレンダーの領域を計算
+              var calendar1El = document.getElementById("calendar1");
+              var calendar_x1 = calendar1El.offsetLeft;
+              var calendar_x2 =
+                calendar1El.offsetLeft + calendar1El.offsetWidth;
+              var calendar_y1 = calendar1El.offsetTop;
+              var calendar_y2 =
+                calendar1El.offsetTop + calendar1El.offsetHeight;
+              if (
+                eventEl.jsEvent.pageX >= calendar_x1 &&
+                eventEl.jsEvent.pageX <= calendar_x2 &&
+                eventEl.jsEvent.pageY >= calendar_y1 &&
+                eventEl.jsEvent.pageY <= calendar_y2
+              ) {
+                is_drag_from_calendar = 1;
+              }
+            },
+            //ドラッグを始めた場所がカレンダー内で、終わった場所がゴミ箱内であればイベントリムーブ
+            eventDragStop: function (eventEl) {
+              //口を閉じる関数
+              function mogumogu_close() {
+                var element = document.getElementById("mogumogu");
+                element.src = "img/mogumoguface_close_dog.png";
+              }
+              //口を開ける関数
+              function mogumogu_open() {
+                var element = document.getElementById("mogumogu");
+                element.src = "img/mogumoguface_open_dog.png";
+              }
+              //もぐもぐする関数
+              function mogumogu_function() {
+                mogumogu_open();
+                setTimeout(() => {
+                  mogumogu_close();
+                  setTimeout(() => {
+                    mogumogu_open();
+                    setTimeout(() => {
+                      mogumogu_close();
+                      setTimeout(() => {
+                        mogumogu_open();
+                        setTimeout(() => {
+                          mogumogu_close();
+                        }, 500); //0.5秒後に実行ではなく、0.5秒後にタスクキューに追加
+                      }, 1000); //タスクキューが混んでいれば実行も遅くなる
+                    }, 1500);
+                  }, 2000);
+                }, 2500);
+              }
+
+              var trashEl = document.getElementById("remove-events");
+              //ゴミ箱の領域を計算
+              var x1 = trashEl.offsetLeft;
+              var x2 = trashEl.offsetLeft + trashEl.offsetWidth;
+              var y1 = trashEl.offsetTop + window.pageYOffset; //スクロールしてもゴミ箱ok
+              var y2 =
+                trashEl.offsetTop + trashEl.offsetHeight + window.pageYOffset; //スクロールしてもゴミ箱ok
+              if (
+                eventEl.jsEvent.pageX >= x1 &&
+                eventEl.jsEvent.pageX <= x2 &&
+                eventEl.jsEvent.pageY >= y1 &&
+                eventEl.jsEvent.pageY <= y2
+              ) {
+                if (is_drag_from_calendar == 1) {
+                  mogumogu_function();
+                  eventEl.event.remove();
+                  console.log(eventEl);
+                  console.log("publicId:" + eventEl.event._def.publicId); //publicId(データベースのid)を出力
+
+                  //データベースのデータを削除
+                  deleteDoc(doc(db, "foods", eventEl.event._def.publicId));
+                }
+              }
+              is_drag_from_calendar = 0;
+            },
+
+            //ドロップされたイベントの名前と日付だけ取得
+            drop: function (eventEl) {
+              event_name = eventEl.draggedEl.children[0].innerText;
+              event_dateStr = eventEl.dateStr;
+            },
+
+            //カレンダーにドラッグで追加されたイベントを削除
+            //データベースにイベントを登録
+            //カレンダーにもう一度イベント追加
+            eventReceive: function (info) {
+              info.event.remove();
+              var b = firebase_regist.regist(
+                event_name,
+                event_dateStr,
+                event_dateStr
+              );
+              // イベントの追加
+              calendar.addEvent({
+                title: event_name,
+                start: event_dateStr,
+                end: event_dateStr,
+                id: b.id
+              });
+            },
+
+            // 日付をクリック、または範囲を選択したイベント
+            selectable: true,
+            select: function (info) {
+              // 入力ダイアログ
+              const eventName = prompt("食材名を入力してください");
+
+              if (eventName) {
+                // Add a new document with a generated id
+                var b = firebase_regist.regist(
+                  eventName,
+                  info.startStr,
+                  info.endStr
+                );
+                // イベント追加
+                calendar.addEvent({
+                  title: eventName,
+                  start: info.startStr,
+                  end: info.endStr,
+                  id: b.id
+                });
+              }
+            }
+          });
+          // カレンダーレンダリング
+          //a
+          calendar.render();
+        });
+      })();
+    </script>
+  </body>
+  
+</html>
